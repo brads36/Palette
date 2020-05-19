@@ -17,7 +17,26 @@ class PaletteTableViewCell: UITableViewCell {
     }
     
     func updateViews( ){
-        
+        guard let photo = photo else { return }
+        fetchAndSetImage(for: photo)
+        fetchAndSetColorStack(for: photo)
+        paletteTitleLabel.text = photo.description ?? "No description available."
+    }
+    
+    func fetchAndSetImage(for unsplashPhoto: UnsplashPhoto) {
+        UnsplashService.shared.fetchImage(for: unsplashPhoto) { (image) in
+            DispatchQueue.main.async {
+                self.palettImageView.image = image            }
+        }
+    }
+    
+    func fetchAndSetColorStack(for unsplashPhoto: UnsplashPhoto) {
+        ImaggaService.shared.fetchColorsFor(imagePath: unsplashPhoto.urls.regular) { (colors) in
+            DispatchQueue.main.async {
+                guard let colors = colors else { return }
+                self.colorPaletteView.colors = colors
+            }
+        }
     }
     
     override func layoutSubviews() {
@@ -25,12 +44,14 @@ class PaletteTableViewCell: UITableViewCell {
         addAllSubviews()
         constrainImageView()
         constrainTitleLabel()
+        constrainColorPaletteView()
     }
     
     // MARK: - Helpers
     func  addAllSubviews() {
         self.addSubview(palettImageView)
         self.addSubview(paletteTitleLabel)
+        self.addSubview(colorPaletteView)
     }
     
     func constrainImageView() {
@@ -40,6 +61,10 @@ class PaletteTableViewCell: UITableViewCell {
     
     func constrainTitleLabel() {
         paletteTitleLabel.anchor(top: palettImageView.bottomAnchor, bottom: nil, leading: self.contentView.leadingAnchor, trailing: self.contentView.trailingAnchor, paddingTop: SpacingConstants.verticalObjectBuffer, paddingBottom: 0, paddingLeading: SpacingConstants.outerHorizontalPadding, paddingTrailing: SpacingConstants.outerHorizontalPadding, width: nil, height: SpacingConstants.smallElementHeight)
+    }
+    
+    func constrainColorPaletteView() {
+        colorPaletteView.anchor(top: paletteTitleLabel.bottomAnchor, bottom: contentView.bottomAnchor, leading: contentView.leadingAnchor, trailing: contentView.trailingAnchor, paddingTop: SpacingConstants.verticalObjectBuffer, paddingBottom: SpacingConstants.outerVerticalPadding, paddingLeading: SpacingConstants.outerHorizontalPadding, paddingTrailing: SpacingConstants.outerHorizontalPadding, width: nil, height: SpacingConstants.mediumElementHeight)
     }
     
     // MARK: - Views
@@ -57,5 +82,10 @@ class PaletteTableViewCell: UITableViewCell {
         label.textAlignment = .center
         label.text = "Legion Of Boom"
         return label
+    }()
+    
+    let colorPaletteView: ColorPaletteView = {
+        let paletteView = ColorPaletteView()
+        return paletteView
     }()
 }

@@ -15,6 +15,10 @@ class PaletteListViewController: UIViewController {
     
     var photos: [UnsplashPhoto] = []
     
+    var buttons: [UIButton] {
+        return [featureButton, randomButton, doubleRainbowButton]
+    }
+    
     // MARK: - LifeCycles
     override func loadView() {
         super.loadView()
@@ -29,8 +33,16 @@ class PaletteListViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = .systemTeal
+        self.view.backgroundColor = .systemRed
         configureTableView()
+        activateButtons()
+        UnsplashService.shared.fetchFromUnsplash(for: .featured) { (unsplashPhotos) in
+            DispatchQueue.main.async {
+                guard let photos = unsplashPhotos else { return }
+                self.photos = photos
+                self.paletteTableView.reloadData()
+            }
+        }
     }
     
     // MARK: - Helper Methods
@@ -60,6 +72,15 @@ class PaletteListViewController: UIViewController {
     func constrainTableView() {
         paletteTableView.anchor(top: buttonStackView.bottomAnchor, bottom: safeArea.bottomAnchor, leading: safeArea.leadingAnchor, trailing: safeArea.trailingAnchor, paddingTop: 0, paddingBottom: 0, paddingLeading: 0
             , paddingTrailing: 0)
+    }
+    
+    @objc func selectButton(sender: UIButton) {
+        buttons.forEach{ $0.setTitleColor(.lightGray, for: .normal)}
+        sender.setTitleColor(UIColor(named: "devmountainBlue"), for: .normal)
+    }
+    
+    func activateButtons() {
+        buttons.forEach { $0.addTarget(self, action: #selector(selectButton(sender:)), for: .touchUpInside)}
     }
     
     // MARK: - Views
@@ -110,18 +131,20 @@ extension PaletteListViewController: UITableViewDataSource, UITableViewDelegate 
         let imageViewSpace: CGFloat = (view.frame.width - (2 * SpacingConstants.outerHorizontalPadding))
         let outerVerticalPadding: CGFloat = (2 * SpacingConstants.outerVerticalPadding)
         let labelSpace: CGFloat = SpacingConstants.smallElementHeight
-        let objectBuffer: CGFloat = SpacingConstants.verticalObjectBuffer
-        return imageViewSpace + outerVerticalPadding + labelSpace + objectBuffer
+        let objectBuffer: CGFloat = (2 * SpacingConstants.verticalObjectBuffer)
+        let colorPaletteViewSpace: CGFloat = SpacingConstants.mediumElementHeight
+        return imageViewSpace + outerVerticalPadding + labelSpace + objectBuffer + colorPaletteViewSpace
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 5//photos.count
+        return photos.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "photoCell", for: indexPath) as! PaletteTableViewCell
-//        let photo = photos[indexPath.row]
-//        cell.photo = photo
+        cell.updateViews()
+        let photo = photos[indexPath.row]
+        cell.photo = photo
         
         return cell
     }

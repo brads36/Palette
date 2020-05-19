@@ -25,8 +25,40 @@ class ColorPaletteView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        setUpViews()
+    }
+    
+    // MARK: - Helpers
+    
+    func setUpViews() {
+        self.addSubview(colorStackView)
+        colorStackView.anchor(top: self.topAnchor, bottom: self.bottomAnchor, leading: self.leadingAnchor, trailing: self.trailingAnchor, paddingTop: 0, paddingBottom: 0, paddingLeading: 0, paddingTrailing: 0)
+        self.layer.cornerRadius = (self.frame.height / 2)
+        self.layer.masksToBounds = true
+    }
+    
     func buildColorBricks() {
-        
+        resetColorBricks()
+        for color in colors {
+            let colorBrick = generateColorBricks(for: color)
+            self.addSubview(colorBrick)
+            self.colorStackView.addArrangedSubview(colorBrick)
+        }
+        self.layoutIfNeeded()
+    }
+    
+    func generateColorBricks(for color: UIColor) -> UIView {
+        let colorBrick = UIView()
+        colorBrick.backgroundColor = color
+        return colorBrick
+    }
+    
+    func resetColorBricks() {
+        for subview in colorStackView.arrangedSubviews {
+            self.colorStackView.removeArrangedSubview(subview)
+        }
     }
     
     // MARK: - Views
