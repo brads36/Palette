@@ -12,7 +12,7 @@ enum UnsplashRoute {
     
     static let baseUrl = "https://api.unsplash.com/"
     //TODO: - Input Unsplash Client Id
-    static let clientId = ""
+    static let clientId = "EnYhYlSNyl3ggWZy8OZgGHxb3g1VWildJe1pq7kl7es"
     
     case random
     case featured
